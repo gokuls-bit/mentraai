@@ -1,0 +1,11 @@
+fastapi==0.95.0
+uvicorn[standard]==0.22.0
+python-multipart==0.0.6
+pydantic==1.10.7
+starlette==0.26.1
+# Optional / for real models
+# tensorflow==2.13.0
+# transformers==4.40.0
+# torch==2.1.0
+# torchvision==0.16.0
+# torchaudio==2.1.0

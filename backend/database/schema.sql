@@ -1,0 +1,11 @@
+-- database/schema.sql
+-- Placeholder for potential Supabase or SQL integration (optional future use).
+-- Current implementation uses MongoDB for full async flexibility.
+
+-- Example if switching to SQL:
+-- CREATE TABLE users (
+--   id SERIAL PRIMARY KEY,
+--   full_name TEXT,
+--   email TEXT UNIQUE,
+--   created_at TIMESTAMP DEFAULT NOW()
+-- );

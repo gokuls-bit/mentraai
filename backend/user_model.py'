@@ -1,0 +1,68 @@
+# user_model.py
+"""
+Defines data validation and document structure using Pydantic.
+Acts like a Mongoose-style schema layer for MongoDB.
+"""
+
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional, List, Dict, Any
+from datetime import datetime
+from bson import ObjectId
+
+# --- Helper class to serialize MongoDB ObjectIds ---
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if isinstance(v, ObjectId):
+            return v
+        if isinstance(v, str):
+            try:
+                return ObjectId(v)
+            except Exception:
+                raise ValueError("Invalid ObjectId string")
+        raise ValueError("Invalid ObjectId")
+
+# --- Data Models ---
+
+class EmotionEntry(BaseModel):
+    """Tracks user emotion logs (mood, context, time)."""
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    mood_score: int = Field(..., ge=0, le=100, description="Mood intensity 0–100")
+    mood_label: Optional[str] = Field(None, description="Text label, e.g. 'happy', 'anxious'")
+    context: Optional[str] = Field(None, description="Short contextual note")
+
+class ProgressEntry(BaseModel):
+    """Tracks user learning progress."""
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    module_id: str
+    score: Optional[float] = None
+    completed: bool = False
+    duration_minutes: Optional[int] = None
+    meta: Optional[Dict[str, Any]] = None
+
+class UserProfile(BaseModel):
+    """User profile data."""
+    full_name: Optional[str]
+    email: Optional[EmailStr]
+    roles: List[str] = Field(default_factory=lambda: ["learner"])
+    skills: List[str] = []
+    goals: List[str] = []
+    timezone: Optional[str] = None
+
+class UserDocument(BaseModel):
+    """Full user document model."""
+    id: Optional[PyObjectId] = Field(alias="_id")
+    user_id: str
+    profile: UserProfile = Field(default_factory=UserProfile)
+    emotion_entries: List[EmotionEntry] = Field(default_factory=list)
+    progress_entries: List[ProgressEntry] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    last_active: Optional[datetime] = None
+
+    class Config:
+        allow_population_by_field_name = True
+        json_encoders = {ObjectId: str, datetime: lambda v: v.isoformat()}
